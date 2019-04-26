@@ -3,7 +3,7 @@
 # @Email:  jasonjin22@gmail.com
 # @Date:   2019-04-24 14:09:41
 # @Last Modified by:   orres
-# @Last Modified time: 2019-04-27 00:16:57
+# @Last Modified time: 2019-04-27 00:24:35
 import intervals as interval
 import copy
 
@@ -113,13 +113,13 @@ if __name__ == '__main__':
 	while (line):
 		line = file.readline()
 		X += line[:-1]
-	seq = 'GTAGTTCTCTGGGACCTGCAAGAGGCTGGCAGGGACATGTGAGAGGTGACAGGGACCTGCA'
+	seq = 'AACGCAGCTCCGCCCTCGCGGTGCTCTCCGGGTCTGTGCTGAGGAGAACGCAACTCCGCC'
 	X += '$'
 	bwt = get_BWT(X)
 	b = get_B(bwt)
 	D = calculateD(seq, X, b)
 	C = calculateC(X)
-	z = 8
+	z = 2
 	# print(b)
 	# print_indexedBWT(bwt)
 	result = inex_recur(seq, len(seq) - 1, z, 1, len(X) - 1)
