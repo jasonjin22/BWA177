@@ -1,3 +1,6 @@
+#ifndef COMPRESSFA_HPP
+#define COMPRESSFA_HPP
+
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -14,3 +17,5 @@
  * \return a vector stored all the .fa file information
  */
 std::vector<uint8_t> compressfa(int & fa_len);
+
+#endif

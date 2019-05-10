@@ -1,14 +1,14 @@
 #include "compressfa/extractfa.hpp"
 
-char extractfa(const std::vector<uint8_t> fa, const int index) {
+char extractfa(std::vector<uint8_t> * const fa, const int index) {
 	int compressed_index = index / 2;
 	int number_represent;
 	if (index % 2) {
 		// the least significant 4 bits
-		number_represent = fa[compressed_index] & 0x0f;
+		number_represent = (*fa)[compressed_index] & 0x0f;
 	} else {
 		// the most significant 4 bits
-		number_represent = fa[compressed_index] & 0xf0;
+		number_represent = (*fa)[compressed_index] & 0xf0;
 		number_represent >>= 4;
 	}
 	switch (number_represent) {

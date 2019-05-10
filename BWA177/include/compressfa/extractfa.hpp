@@ -1,3 +1,6 @@
+#ifndef EXTRACTFA_HPP
+#define EXTRACTFA_HPP
+
 #include <iostream>
 #include <sstream>
 #include <vector>
@@ -13,4 +16,6 @@
  * 
  * \return the required nucleotide
  */
-char extractfa(const std::vector<uint8_t> fa, const int index);
+char extractfa(std::vector<uint8_t> * const fa, const int index);
+
+#endif

@@ -10,3 +10,4 @@ aux_source_directory(src DIR_SRCS)
 ADD_EXECUTABLE(BWA177 ${DIR_SRCS})
 
 target_link_libraries(BWA177 hsds-bitvector)
+target_link_libraries(BWA177 divsufsort)

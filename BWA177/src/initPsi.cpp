@@ -1,12 +1,13 @@
 #include "genPsi/initPsi.hpp"
+#include "compressfa/extractfa.hpp"
 
-std::vector<int> getSA(std::string segment) {
+std::vector<int> getSA(std::string seg) {
 	std::vector<int> result;
-	int segment_len = segment.length();
+	int seg_len = seg.length();
 	std::list< std::tuple<std::string, int> > sort_list;
-	for (int i = 0; i < segment_len; ++i) {
-		sort_list.push_back(std::make_tuple(segment, i));
-		segment = segment.substr(1, segment_len - 1) + segment[0];
+	for (int i = 0; i < seg_len; ++i) {
+		sort_list.push_back(std::make_tuple(seg, i));
+		seg = seg.substr(1, seg_len - 1) + seg[0];
 	}
 	sort_list.sort();
 	for (auto s : sort_list) {
@@ -37,8 +38,14 @@ std::vector<int> construct_Psi(const std::vector<int> sa, const std::vector<int>
 	return result;
 }
 
-std::vector<int> brute_force_init_Psi(const std::string segment) {
-	std::vector<int> sa = getSA(segment);
+std::vector<int> brute_force_init_Psi(std::vector<uint8_t> * const fa, segment seg) {
+	std::string seg_str = "";
+	int start_index = seg.get_start_index();
+	int end_index = seg.get_end_index();
+	for (int i = start_index; i < end_index + 1; ++i) {
+		seg_str += extractfa(fa, i);
+	}
+	std::vector<int> sa = getSA(seg_str);
 	std::vector<int> inv_sa = get_inv_SA(sa);
 	return construct_Psi(sa, inv_sa);
 }

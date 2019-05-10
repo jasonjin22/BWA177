@@ -1,3 +1,9 @@
+#ifndef INITPSI_HPP
+#define INITPSI_HPP
+
+#include "utils/segment.hpp"
+
+#include <stdint.h>
 #include <iostream>
 #include <vector>
 #include <list>
@@ -41,4 +47,6 @@ std::vector<int> construct_Psi(const std::vector<int> sa, const std::vector<int>
  * \param segment the initial short segment
  * \return the initial Psi array, which can be used to compute the whole Psi array step by step
  */
-std::vector<int> brute_force_init_Psi(const std::string segment);
+std::vector<int> brute_force_init_Psi(std::vector<uint8_t> * const fa, const segment seg);
+
+#endif
