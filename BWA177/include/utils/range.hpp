@@ -2,6 +2,7 @@
 #define RANGE_HPP
 
 #include <iostream>
+#include <tuple>
 
 /**
  * \brief a class to simulate the range in Python
@@ -18,6 +19,7 @@ public:
 	range(int start, int end);
 	~range();
 	void print();
+	std::tuple<int, int> get_range();
 private:
 	int _start;
 	int _end;

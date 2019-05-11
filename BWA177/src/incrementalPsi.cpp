@@ -10,12 +10,35 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "hsds/bit-vector.hpp"
+
 std::vector<int> next_Psi(std::vector<int> * const Psi_b, segment seg, segment new_seg, 
 						segment B, std::vector<uint8_t> * const fa) {
 	// M stores the rank of long suffixes among themselves
 	std::vector<int> M = get_M(Psi_b, seg, new_seg, fa);
 	// L stores the rank of long suffixes among S(B)
 	std::vector<int> L = get_L(Psi_b, seg, new_seg, B, fa);
+	// the inverse of M
+	std::vector<int> invM(M.size());
+	for (int i = 0; i < M.size(); ++i) {
+		invM[M[i]] = i;
+	}
+	// here we construct the V vector, its len m is the length of B add the length of new_seg,
+	// V is a bit vector that V[i] is 1 if the suffix of A with rank i is a long suffix and V[i]
+	// is 0 otherwise, here i use hsds/bit-vector to serve as V, the library is built by Hideaki Ohno
+	hsds::BitVector V;
+	// bv.set(i, false);
+	// bv.build(false, true);
+	// bv.rank0(64423700);
+	// bv.select0(5412392);
+
+
+	// std::cout << "~~~~~~~~~~~~~~~M: ~~~~~~~~~~~~~\n";
+	// for (auto x : M) std::cout << x << " ";
+	// std::cout << "\n";
+	// std::cout << "~~~~~~~~~~~~~~~L: ~~~~~~~~~~~~~\n";
+	// for (auto x : L) std::cout << x << " ";
+	// std::cout << "\n";
 	return M;
 }
 
@@ -37,10 +60,10 @@ std::vector<int> get_M(std::vector<int> * const Psi_b, segment seg, segment new_
     for (auto x : sorting_list) {
     	result[std::get<2>(x)] = index ++;
     }
-    std::cout << "----------------\n";
-    for (auto x : result) {
-    	std::cout << x << std::endl;
-    }
+    // std::cout << "----------------\n";
+    // for (auto x : result) {
+    // 	std::cout << x << std::endl;
+    // }
 	return result;
 }
 
@@ -127,11 +150,24 @@ std::vector<int> get_L(std::vector<int> * const Psi_b, segment seg, segment new_
 
 		if (gamma != 0) {
 			rank_vector = bin_search_L(RBc, Psi_b, benchmark);
+		} else {
+			// std::cout << "clear\n";
+			rank_vector.clear();
 		}
-
-
-
-
+		// std::cout << "========================\n";
+		// for (auto x : rank_vector) {
+		// 	std::cout << x << " ";
+		// }
+		// std::cout << "\n";
+		if (rank_vector.size() == 0) {
+			result[k] = alpha;
+		} else {
+			int max = -1;
+			for (auto x : rank_vector) {
+				if (x > max) max = x;
+			}
+			result[k] = max + 1;
+		}
 		k -= 1;
 	}
 	return result;
@@ -146,4 +182,36 @@ void get_alpha_gamma(segment B, char c, std::vector<uint8_t> * const fa, int & a
 	}
 }
 
-std::vector<int> bin_search_L(range RBc, std::vector<int> * const Psi_b, int benchmark) {}
+std::vector<int> bin_search_L(range RBc, std::vector<int> * const Psi_b, int benchmark) {
+	int start_index = std::get<0>(RBc.get_range());
+	int end_index = std::get<1>(RBc.get_range());
+	// std::cout << "start_index: " << start_index << std::endl;
+	// std::cout << "end_index: " << end_index << std::endl;
+	if ((*Psi_b)[end_index] < benchmark) {
+		// the max in range already meet the condition
+		std::vector<int> result;
+		result.push_back(end_index);
+		return result;
+	}
+	if (end_index - start_index <= 5) {
+		// when the search range is small enough, we directly search through it
+		std::vector<int> result;
+		for (int i = start_index; i <= end_index; ++i) {
+			if ((*Psi_b)[i] < benchmark) result.push_back(i);
+		}
+		return result;
+	} else {
+		// otherwise, do the binary search recursively
+		int middle_index = start_index + (end_index - start_index) / 2;
+		int middle_num = (*Psi_b)[middle_index];
+		if (middle_num < benchmark) {
+			// keep search in the second half
+			range second_half(middle_index, end_index + 1);
+			return bin_search_L(second_half, Psi_b, benchmark);
+		} else {
+			// keep search in the first half
+			range first_half(start_index, middle_index + 1);
+			return bin_search_L(first_half, Psi_b, benchmark);
+		}
+	}
+}

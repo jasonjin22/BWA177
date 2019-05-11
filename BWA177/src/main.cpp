@@ -9,7 +9,7 @@
 #include "genPsi/incrementalPsi.hpp"
 
 // #include "hsds/bit-vector.hpp"
-#include "hello/hello.hpp"
+// #include "hello/hello.hpp"
 
 #include <divsufsort.h>
 #include <stdio.h>
@@ -48,15 +48,15 @@ int main(int argc, char const *argv[]) {
 		for (int i = 1; i < iterations; ++i) {
 			std::cout << "index building iteration: " << i + 1 << " / " << iterations << std::endl;			
 			segment new_seg(head_index, tail_index);
-			std::cout << "new_seg: " << new_seg.get_start_index() << " and " << new_seg.get_end_index() << "\n";
+			// std::cout << "new_seg: " << new_seg.get_start_index() << " and " << new_seg.get_end_index() << "\n";
 
 			head_index -= seg_length;
 			tail_index -= seg_length;
 			Psi_a = next_Psi(&pre_Psi, seg, new_seg, B, &fa);
-			// pre_Psi = Psi_a;
+			pre_Psi = Psi_a;
 			seg = new_seg;
 			B.increment_head(seg);
-			std::cout << "B: " << B.get_start_index() << " and " << B.get_end_index() << "\n";
+			// std::cout << "B: " << B.get_start_index() << " and " << B.get_end_index() << "\n";
 		}
 
 	} else if (parameter == "test") {
