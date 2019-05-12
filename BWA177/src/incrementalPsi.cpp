@@ -18,24 +18,14 @@ std::vector<int> next_Psi(std::vector<int> * const Psi_b, segment seg, segment n
 						segment B, std::vector<uint8_t> * const fa,
 						std::map<char, int> & old_alpha, std::map<char, int> & old_gamma) {
 	// M stores the rank of long suffixes among themselves
-	// std::cout << "start M\n";
 	std::vector<int> M = get_M(Psi_b, seg, new_seg, fa);
-	// std::cout << "end M\n";
 	// L stores the rank of long suffixes among S(B)
-	// std::cout << "start L\n";
 	std::vector<int> L = get_L(Psi_b, seg, new_seg, B, fa, old_alpha, old_gamma);
-	// std::cout << "end L\n";
 	// the inverse of M
 	std::vector<int> invM(M.size());
 	for (int i = 0; i < M.size(); ++i) {
 		invM[M[i]] = i;
 	}
-	// std::cout << "M:!!!!!!!!!!!!!!!!!!!!!1\n";
-	// for (auto x : M) std::cout << x << " ";
-	// std::cout << "\n";
-	// std::cout << "L:!!!!!!!!!!!!!!!!!!!!!1\n";
-	// for (auto x : L) std::cout << x << " ";
-	// std::cout << "\n";
 	std::vector<int> sorted_L = L;
 	std::sort(sorted_L.begin(), sorted_L.end());
 	// here we construct the V vector, its len m is the length of B add the length of new_seg,
@@ -70,31 +60,21 @@ std::vector<int> next_Psi(std::vector<int> * const Psi_b, segment seg, segment n
 		V_index += 1;
 	}
 	V.build(false ,true);
-	// std::cout << "end build V\n";
-	// std::cout << "V:!!!!!!!!!!!!!!!!!!!!!1\n";
-	// for (int i = 0; i < new_seg.get_length() + B.get_length(); ++i) {
-	// 	std::cout << V[i] << " ";
-	// }
-	// std::cout << "\n";
-	// std::cout << "start Psi_a\n";
+
 	std::vector<int> Psi_a(new_seg.get_length() + B.get_length());
 	Psi_a[0] = M[0] + L[0];
 	for (int r = 1; r < new_seg.get_length() + B.get_length(); ++r) {
 		if (!V[r]) {
 			uint64_t r_prime = V.rank0(r);
 			int p = (*Psi_b)[r_prime];
-			// if (V.select0(p) == -1) std::cout << "one\n";
 			Psi_a[r] = V.select0(p);
 		} else {
 			uint64_t r_prime = V.rank1(r);
 			int k = invM[r_prime];
 			if (k < new_seg.get_length() - 1) {
-				// if (M[k+1] + L[k+1] == -1) std::cout << "two\n";
-
 				Psi_a[r] = M[k+1] + L[k+1];
 			} else {
 				int p = (*Psi_b)[0];
-				// if (V.select0(p) == -1) std::cout << "three\n";
 				Psi_a[r] = V.select0(p);
 			}
 		}
@@ -106,19 +86,9 @@ std::vector<int> get_M(std::vector<int> * const Psi_b, segment seg, segment new_
 						std::vector<uint8_t> * const fa) {
 	std::vector<int> result(new_seg.get_length());
 	// P stores the rank of A_k among LS(A) when only the first l characters are considered
-	// std::cout << "start P\n";
 	std::vector<int> P = get_P(seg, new_seg, fa);
-	// std::cout << "end P\n";
-	// std::cout << "P:!!!!!!!!!!!!!!!!!!!!!1\n";
-	// for (auto x : P) std::cout << x << " ";
-	// std::cout << "\n";
 	// Q stores the rank of B_k among S(B), which equals to invSA_B[k]
-	// std::cout << "start Q\n";
 	std::vector<int> Q = get_Q(Psi_b, new_seg.get_length());
-	// std::cout << "end Q\n";
-	// std::cout << "Q:!!!!!!!!!!!!!!!!!!!!!1\n";
-	// for (auto x : Q) std::cout << x << " ";
-	// std::cout << "\n";
 	// we are interested in the rank of the tuple(P[i], Q[i])
 	std::list< std::tuple<int, int, int> > sorting_list;
 	for (int i = 0; i < new_seg.get_length(); ++i) {
@@ -130,10 +100,7 @@ std::vector<int> get_M(std::vector<int> * const Psi_b, segment seg, segment new_
 	for (auto x : sorting_list) {
 		result[std::get<2>(x)] = index ++;
 	}
-	// std::cout << "----------------\n";
-	// for (auto x : result) {
-	// 	std::cout << x << std::endl;
-	// }
+
 	return result;
 }
 
@@ -152,8 +119,6 @@ std::vector<int> get_P(segment seg, segment new_seg, std::vector<uint8_t> * cons
 		back += extractfa(fa, i);
 	}
 	two_chunk = front + back;
-	// std::cout << "two_chunk: " << two_chunk << std::endl;
-
 	if (two_chunk.length() > SAFEL) {
 		// 2l is too long to directly sort the l strings, so use the divsufsort to save space
 		// also the probability of going wrong is some  very low
@@ -241,14 +206,8 @@ std::vector<int> get_L(std::vector<int> * const Psi_b, segment seg, segment new_
 		if (gamma != 0) {
 			rank_vector = bin_search_L(RBc, Psi_b, benchmark);
 		} else {
-			// std::cout << "clear\n";
 			rank_vector.clear();
 		}
-		// std::cout << "========================\n";
-		// for (auto x : rank_vector) {
-		// 	std::cout << x << " ";
-		// }
-		// std::cout << "\n";
 		if (rank_vector.size() == 0) {
 			result[k] = alpha;
 		} else {
@@ -275,19 +234,11 @@ void get_alpha_gamma(segment seg, std::vector<uint8_t> * const fa,
 		if (x < 'T') old_alpha['T'] += 1;
 		if (x < 'N') old_alpha['N'] += 1;
 	}
-	// alpha += old_alpha[c];
-	// gamma += old_gamma[c];
-	// old_alpha[c] = alpha;
-	// old_gamma[c] = gamma;
-	// alpha += old_alpha;
-	// gamma += old_gamma;
 }
 
 std::vector<int> bin_search_L(range RBc, std::vector<int> * const Psi_b, int benchmark) {
 	int start_index = std::get<0>(RBc.get_range());
 	int end_index = std::get<1>(RBc.get_range());
-	// std::cout << "start_index: " << start_index << std::endl;
-	// std::cout << "end_index: " << end_index << std::endl;
 	if ((*Psi_b)[end_index] < benchmark) {
 		// the max in range already meet the condition
 		std::vector<int> result;

@@ -9,6 +9,8 @@
 #include "genPsi/initPsi.hpp"
 #include "genPsi/incrementalPsi.hpp"
 
+#include "genBWT/constructBWT.hpp"
+
 #include <divsufsort.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -20,6 +22,7 @@ int main(int argc, char const *argv[]) {
 	std::string parameter = argv[1];
 
 	if (parameter == "index") {
+		std::string name = argv[2];
 		int fa_len;
 		std::cout << "start compressfa\n";
 		std::vector<uint8_t> fa = compressfa(fa_len);
@@ -102,10 +105,11 @@ int main(int argc, char const *argv[]) {
 			B.increment_head(seg);
 			std::cout << "length of the Psi array: " << pre_Psi.size() << std::endl;
 		}
-	// std::cout << "~~~~~~~~~~~~~~~pre_Psi: ~~~~~~~~~~~~~\n";
-	// for (auto x : pre_Psi) std::cout << x << " ";
-	// std::cout << "\n";
-
+		std::cout << "~~~~~~~~~~~~~~~pre_Psi: ~~~~~~~~~~~~~\n";
+		for (auto x : pre_Psi) std::cout << x << " ";
+		std::cout << "\n";
+		// now we can generate the BWT from the Psi array
+		constructBWT(&pre_Psi, &fa, name);
 
 	} else if (parameter == "test") {
 		// testssort();
