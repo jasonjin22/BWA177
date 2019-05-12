@@ -26,7 +26,6 @@ std::vector<uint8_t> compressfa(int & fa_len) {
 		} else {
 			// deal the real sequence
 			for (char c : line) {
-
 				if (c == 'A' or c == 'a') {
 					valid_nucletide += 1;
 					if (tiktok) {
@@ -84,23 +83,23 @@ std::vector<uint8_t> compressfa(int & fa_len) {
 					}
 				}
 			}
-			// add '$' at the end of the whole sequence
-			valid_nucletide += 1;
-			if (tiktok) {
-				tiktok = false;
-				current_number &= (dictionary['$'] << 4);
-			} else {
-				tiktok = true;
-				current_number |=(dictionary['$']);
-				result.push_back(current_number);
-				current_number = 0xff;
-			}
-			if (!tiktok) {
-				// we have odd number of nucletide in the input, push it into the vector
-				result.push_back(current_number);
-			}
 		}
 	}
+		// add '$' at the end of the whole sequence
+		valid_nucletide += 1;
+		if (tiktok) {
+			tiktok = false;
+			current_number &= (dictionary['$'] << 4);
+		} else {
+			tiktok = true;
+			current_number |=(dictionary['$']);
+			result.push_back(current_number);
+			current_number = 0xff;
+		}
+		if (!tiktok) {
+			// we have odd number of nucletide in the input, push it into the vector
+			result.push_back(current_number);
+		}
 	fa_len = valid_nucletide;
 	return result;
 }

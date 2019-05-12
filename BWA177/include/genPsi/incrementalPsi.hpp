@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 #include <vector>
+#include <map>
 
 /**
  * \brief iteratively generate the complete Psi array of the string
@@ -19,10 +20,13 @@
  * \param new_seg the segment used in the current iteration
  * \param B the segment have already been operated on since the initial iteration
  * \param fa the pointer to the fa vector which contains the information of the input string, use pointer to save space 
- * \return the new Psi array contains the information of the new added segment
+ * \param old_alpha the map which indicates the alpha value in the computed segment before, used in get_L
+ * \param old_gamma the map which indicates the gamma value in the computed segment before, used in get_L
+ * \return the Psi array after adding the information of the new_seg, which will be used as Psi_b in the next iterationz
  */
 std::vector<int> next_Psi(std::vector<int> * const Psi_b, segment seg, segment new_seg, 
-						segment B, std::vector<uint8_t> * const fa);
+						segment B, std::vector<uint8_t> * const fa,
+						std::map<char, int> & old_alpha, std::map<char, int> & old_gamma);
 
 /**
  * \brief construct the M array used in nextPsi()
@@ -75,23 +79,28 @@ std::vector<int> get_Q(std::vector<int> * const Psi_b, int k);
  * \param new_seg the segment with length l in the front
  * \param B the segment have already been operated on since the initial iteration
  * \param fa the pointer to the fa vector which contains the information of the input string, use pointer to save space
+ * \param old_alpha the map which indicates the alpha value in the computed segment before, used in get_alpha_gamma
+ * \param old_gamma the map which indicates the gamma value in the computed segment before, used in get_alpha_gamma
  * \return the L vector stores the rank of long suffixes among S(B)
  */
 std::vector<int> get_L(std::vector<int> * const Psi_b, segment seg, segment new_seg, 
-						segment B, std::vector<uint8_t> * const fa);
+						segment B, std::vector<uint8_t> * const fa,
+						std::map<char, int> & old_alpha, std::map<char, int> & old_gamma);
 
 /**
- * \brief get number of suffixes of B starting with char c and number of suffixes of B whose starting char is smaller than char c
- * \details alpha and gamma are used to construct the range in the following steps, call the function once and compute both 
- * alpha and gamma saves time
+ * \brief traverse through the seg and for each character, compute alpha and gamma value in the seg, and update the
+ * total alpha and gamma
+ * \details called in get_L, look into the seg segment, get number of suffixes of seg starting with char c and number
+ * of suffixes of seg whose starting char is smaller than char c, than update the global old_alpha and old_gamma, which 
+ * will be useful in get_L
  * 
- * \param B the segment have already been operated on since the initial iteration
- * \param c the starting char c
+ * \param seg the segment add in the last iteration, we already recorded all the information before it
  * \param fa the pointer to the fa vector which contains the information of the input string, use pointer to save space
- * \param alpha we will store result of alpha there
- * \param gamma we will store result of gamma there
+ * \param old_alpha the map recorded the global alpha information
+ * \param old_gamma the map recorded the global gamma information
  */
-void get_alpha_gamma(segment B, char c, std::vector<uint8_t> * const fa, int & alpha, int & gamma);
+void get_alpha_gamma(segment seg, std::vector<uint8_t> * const fa,
+					std::map<char, int> & old_alpha, std::map<char, int> & old_gamma);
 
 /**
  * \brief use binary search in Psi_b to find the max r satisfy the condition

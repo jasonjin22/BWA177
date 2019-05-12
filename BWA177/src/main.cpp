@@ -1,5 +1,6 @@
 #include <iostream>
 #include <cmath>
+#include <map>
 
 #include "compressfa/compressfa.hpp"
 #include "compressfa/extractfa.hpp"
@@ -8,25 +9,19 @@
 #include "genPsi/initPsi.hpp"
 #include "genPsi/incrementalPsi.hpp"
 
-// #include "hsds/bit-vector.hpp"
-// #include "hello/hello.hpp"
-
 #include <divsufsort.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-// using namespace hsds;
-
-
 
 int main(int argc, char const *argv[]) {
-
 
 	std::string parameter = argv[1];
 
 	if (parameter == "index") {
 		int fa_len;
+		std::cout << "start compressfa\n";
 		std::vector<uint8_t> fa = compressfa(fa_len);
 
 		// how long each segment should be when we are constructing the Psi
@@ -40,27 +35,79 @@ int main(int argc, char const *argv[]) {
 		segment seg(fa_len - initial_length, fa_len - 1);
 		segment B(fa_len - initial_length, fa_len - 1);
 
-		// use brute_force to build the initial small chunk of Psi array
-		std::vector<int> pre_Psi = brute_force_init_Psi(&fa, seg);
+		std::cout << "computing the initial Psi\n";
+		std::vector<int> pre_Psi(seg.get_length());
+
+		if (seg.get_length() < 20000) {
+			// this case it will consume 400M to sort
+			// use brute_force to build the initial small chunk of Psi array
+			pre_Psi = brute_force_init_Psi(&fa, seg);
+		} else {
+			// in this case, we can not directly sort the segment, so i use divsufsort library
+			// which provides a memory saving way to construct the suffix array
+			// construct the string represented by new_seg
+			std::string init_str = "";
+			for (int i = seg.get_start_index(); i < seg.get_end_index() + 1; ++i) {
+				init_str += extractfa(&fa, i);
+			}
+			// #################### DIVSUFSORT SECTION ####################
+			const char *init_char = init_str.c_str();
+			int init_str_len = strlen(init_char);
+			int *SA = (int *) malloc(init_str_len * sizeof(int));
+			divsufsort((unsigned char *)init_char, SA, init_str_len);
+			std::vector<int> invSA(init_str_len);
+			// used to sort the rank of the first l elements in invSA
+			std::list< std::tuple<int, int> > sorting_list;
+			// first construct the invSA
+			for (int i = 0; i < init_str_len; ++i) {
+				invSA[SA[i]] = i;
+			}
+			pre_Psi[0] = invSA[0];
+			for (int i = 1; i < init_str_len; ++i) {
+				pre_Psi[i] = invSA[SA[i]+1];
+			}
+			free(SA);
+			// ################## DIVSUFSORT SECTION END ###################
+		}
+
 		std::vector<int> Psi_a;
+		// used to denote the start and end of the segment in each iteration
 		int head_index = fa_len - initial_length - seg_length;
 		int tail_index = fa_len - initial_length - 1;
-		for (int i = 1; i < iterations; ++i) {
-			std::cout << "index building iteration: " << i + 1 << " / " << iterations << std::endl;			
-			segment new_seg(head_index, tail_index);
-			// std::cout << "new_seg: " << new_seg.get_start_index() << " and " << new_seg.get_end_index() << "\n";
+		// used to store the alpha and gamma value and free us from traverse through the string again and again
+		std::map<char, int> old_alpha;
+		std::map<char, int> old_gamma;
+		old_alpha['A'] = 0;
+		old_alpha['C'] = 0;
+		old_alpha['G'] = 0;
+		old_alpha['T'] = 0;
+		old_alpha['N'] = 0;
+		old_alpha['$'] = 0;
 
+		old_gamma['A'] = 0;
+		old_gamma['C'] = 0;
+		old_gamma['G'] = 0;
+		old_gamma['T'] = 0;
+		old_gamma['N'] = 0;
+		old_gamma['$'] = 0;
+		// for each chunk, we construct the Psi array iteratively
+		for (int i = 1; i < iterations; ++i) {
+			std::cout << "iteration " << i << " / " << iterations << std::endl;
+			segment new_seg(head_index, tail_index);
 			head_index -= seg_length;
 			tail_index -= seg_length;
-			Psi_a = next_Psi(&pre_Psi, seg, new_seg, B, &fa);
+			Psi_a = next_Psi(&pre_Psi, seg, new_seg, B, &fa, old_alpha, old_gamma);
 			pre_Psi = Psi_a;
 			seg = new_seg;
 			B.increment_head(seg);
-			// std::cout << "B: " << B.get_start_index() << " and " << B.get_end_index() << "\n";
+			std::cout << "length of the Psi array: " << pre_Psi.size() << std::endl;
 		}
+	// std::cout << "~~~~~~~~~~~~~~~pre_Psi: ~~~~~~~~~~~~~\n";
+	// for (auto x : pre_Psi) std::cout << x << " ";
+	// std::cout << "\n";
+
 
 	} else if (parameter == "test") {
-		// hello();
 		// testssort();
 	}
 	return 0;
@@ -68,38 +115,3 @@ int main(int argc, char const *argv[]) {
 
 // ./BWA177: error while loading shared libraries: libdivsufsort.so.3: cannot open shared object file: No such file or directory
 
-
-
-// for (auto s : initPsi) {
-// 	std::cout << s << std::endl;
-// }
-
-// std::cout << fa_len << std::endl;
-
-
-// int testssort() {
-//     // intput data
-//     char *Text = "jinjiachun$";
-//     int n = strlen(Text);
-//     int i, j;
-
-//     // allocate
-//     int *SA = (int *)malloc(n * sizeof(int));
-
-//     // sort
-//     divsufsort((unsigned char *)Text, SA, n);
-
-//     // output
-//     for(i = 0; i < n; ++i) {
-//         printf("SA[%2d] = %2d: ", i, SA[i]);
-//         for(j = SA[i]; j < n; ++j) {
-//             printf("%c", Text[j]);
-//         }
-//         // printf("$\n");
-//     }
-
-//     // deallocate
-//     free(SA);
-
-//     return 0;
-// }
