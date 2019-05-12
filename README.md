@@ -1,4 +1,4 @@
-# BWA_cuda
+# BWA177
 This is my CS177 bioinformatics course project.
 
 ### preliminary
