@@ -11,6 +11,8 @@
 
 #include "genBWT/constructBWT.hpp"
 
+#include "align/prealign.hpp"
+
 #include <divsufsort.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -26,21 +28,17 @@ int main(int argc, char const *argv[]) {
 		int fa_len;
 		std::cout << "start compressfa\n";
 		std::vector<uint8_t> fa = compressfa(fa_len);
-
 		// how long each segment should be when we are constructing the Psi
 		int seg_length = fa_len / std::log2(fa_len);
 		// the length of the first chunk to build the initial Psi
 		int initial_length = fa_len % seg_length + seg_length;
 		// how many iterations in all to build the whole Psi
 		int iterations = fa_len / seg_length;
-
 		// std::string initial_segment = "";
 		segment seg(fa_len - initial_length, fa_len - 1);
 		segment B(fa_len - initial_length, fa_len - 1);
-
 		std::cout << "computing the initial Psi\n";
 		std::vector<int> pre_Psi(seg.get_length());
-
 		if (seg.get_length() < 20000) {
 			// this case it will consume 400M to sort
 			// use brute_force to build the initial small chunk of Psi array
@@ -72,7 +70,6 @@ int main(int argc, char const *argv[]) {
 			free(SA);
 			// ################## DIVSUFSORT SECTION END ###################
 		}
-
 		std::vector<int> Psi_a;
 		// used to denote the start and end of the segment in each iteration
 		int head_index = fa_len - initial_length - seg_length;
@@ -110,9 +107,22 @@ int main(int argc, char const *argv[]) {
 		std::cout << "\n";
 		// now we can generate the BWT from the Psi array
 		constructBWT(&pre_Psi, &fa, name);
-
-	} else if (parameter == "test") {
+	} else if (parameter == "align") {
 		// testssort();
+		std::string name = argv[2];
+		// denote the length of the BWT
+		int BWT_len;
+		// store the calculated Ca
+		std::map<char, int> Ca;
+		// store the calculated Occ chunk
+		std::vector< std::map<char, int> > Occ_chunk;
+		std::cout << "start compress BWT\n";
+		// load all the precalulated things from disk to memory
+		std::vector<uint8_t> BWT_compressed = prealign(name, BWT_len, Ca, Occ_chunk);
+		std::cout << "OUT !!!\n";
+		std::cout << (unsigned)BWT_compressed[2] << " " << BWT_len << " " << Ca['G'] << " " << Occ_chunk[2]['N'];
+
+
 	}
 	return 0;
 }
