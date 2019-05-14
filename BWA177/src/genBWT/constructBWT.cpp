@@ -7,15 +7,36 @@
 #include <map>
 #include <cmath>
 
+/**
+ * \brief generate the BWT of the input fa file and store it
+ * \details use the computed Psi array and the initial string, we can build the BWT of the initial string, in O(n) time, and constructing the BWT string, we store it into the sequence directory  for further alignment, also we will store the C array and the suffix array in the disk which will be needed when doing alignment
+ * 
+ * \param Psi the Psi array which is built iteratively before
+ * \param fa the pointer to the compressed input string, use extractfa() to read its content
+ * \param BWTname user will name the BWT which helps his further alignment operation
+ */
 void constructBWT(std::vector<int> * const Psi, std::vector<uint8_t> * const fa, std::string BWTname) {
 	std::string BWT((*Psi).size(), '0');
+	std::vector<int> suffix_array((*Psi).size());
+	std::ofstream SAFILE;
+	std::string SAFILE_name = "../sequence/SA/";
+	SAFILE_name += BWTname;
+	SAFILE_name += ".SA";
+	SAFILE.open(SAFILE_name);
 	int p = (*Psi)[0];
 	int index = p;
+	suffix_array[0] = (*Psi).size();
 	// generate the BWT file from Psi and the original string
 	for (int k = 1; k <= (*Psi).size(); ++k) {
 		index = (*Psi)[index];
 		BWT[index] = extractfa(fa, k-1);
+		suffix_array[index] = k;
 	}
+	// write the suffix array into the .SA file which will be used in alignment
+	for (auto x : suffix_array) {
+		SAFILE << x << std::endl;
+	}
+	SAFILE.close();
 	// store the BWT into the disk
 	std::ofstream BWTFILE;
 	std::string BWTFILE_name = "../sequence/BWT/";
@@ -28,6 +49,14 @@ void constructBWT(std::vector<int> * const Psi, std::vector<uint8_t> * const fa,
 	constructOcc(BWT, BWTname);
 }
 
+/**
+ * \brief count and store the C(a) which will be used in alignment
+ * \details iterate through the original fa file and for each A,C,G,T,N count the number of occurences and store into the disk 
+ * 
+ * \param Psi the Psi array which is built iteratively before
+ * \param fa the pointer to the compressed input string, use extractfa() to read its content
+ * \param BWTname user will name the BWT which helps his further alignment operation
+ */
 void constructCa(std::vector<int> * const Psi, std::vector<uint8_t> * const fa, std::string BWTname) {
 	// compute the C(a) which denotes # of symbols in original string[0, n-2], which are less than a
 	std::map<char, int> C;
@@ -67,14 +96,17 @@ void constructCa(std::vector<int> * const Psi, std::vector<uint8_t> * const fa, 
 	CFILE.close();
 }
 
+/**
+ * \brief iterate through BWT and store the Occ into disk
+ * \details Occ stores how many ACGTN occurs at BWT[:i+1], we can not store all the information in memory because 16 Bytes is needed for one element in BWT, so for every chunk of size std::log2(N), I store the number of all the occurence of the ACGTN before the chunk, and when we are using it, we just iterate through the chunk and add the sunm before it, maybe a cache is needed
+ * 
+ * \param BWT the calculated BWT
+ * \param BWTname the name given by the user, which will be the name of the Occ file
+ */
 void constructOcc(std::string BWT, std::string BWTname) {
-	std::cout << BWT << std::endl;
 	int N = BWT.length();
 	int chunk_size = std::log2(N);
 	int chunk_num = std::ceil(N / (double)chunk_size);
-
-	std::cout << "chunk_size: " << chunk_size << std::endl;
-	std::cout << "chunk_num: " << chunk_num << std::endl;
 
 	std::map<char, int> Occ_map;
 	Occ_map['A'] = 0;
@@ -92,7 +124,6 @@ void constructOcc(std::string BWT, std::string BWTname) {
 	int index = 0;
 	for (int i = 0; i < chunk_num - 1; ++i) {
 		for (int j = 0; j < chunk_size; ++j) {
-			std::cout << i * chunk_size + j << std::endl;
 			switch (BWT[i * chunk_size + j]) {
 				case 'A':
 				Occ_map['A'] += 1;
@@ -119,7 +150,7 @@ void constructOcc(std::string BWT, std::string BWTname) {
 	}
 	// construct the last chunk which may not has length chunk_size
 	for (int i = (chunk_num - 1) * chunk_size; i < N; ++i) {
-		std::cout << i << std::endl;
+		// std::cout << i << std::endl;
 		switch (BWT[i]) {
 			case 'A':
 			Occ_map['A'] += 1;

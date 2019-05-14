@@ -22,9 +22,7 @@
 
 
 int main(int argc, char const *argv[]) {
-
 	std::string parameter = argv[1];
-
 	if (parameter == "index") {
 		std::string name = argv[2];
 		int fa_len;
@@ -104,14 +102,15 @@ int main(int argc, char const *argv[]) {
 			B.increment_head(seg);
 			std::cout << "length of the Psi array: " << pre_Psi.size() << std::endl;
 		}
-		std::cout << "~~~~~~~~~~~~~~~pre_Psi: ~~~~~~~~~~~~~\n";
-		for (auto x : pre_Psi) std::cout << x << " ";
-		std::cout << "\n";
+		// std::cout << "~~~~~~~~~~~~~~~pre_Psi: ~~~~~~~~~~~~~\n";
+		// for (auto x : pre_Psi) std::cout << x << " ";
+		// std::cout << "\n";
 		// now we can generate the BWT from the Psi array
 		constructBWT(&pre_Psi, &fa, name);
 	} else if (parameter == "align") {
 		// testssort();
 		std::string name = argv[2];
+		std::string ref_name = argv[3];
 		// denote the length of the BWT
 		int BWT_len;
 		// store the calculated Ca
@@ -121,16 +120,9 @@ int main(int argc, char const *argv[]) {
 		std::cout << "start compress BWT\n";
 		// load all the precalulated things from disk to memory
 		std::vector<uint8_t> BWT_compressed = prealign(name, BWT_len, Ca, Occ_chunk);
-		std::cout << "OUT !!!\n";
-		std::cout << (unsigned)BWT_compressed[2] << " " << BWT_len << " " << Ca['G'] << " " << Occ_chunk[2]['N'] << '\n';
-		for (int i = 0; i < BWT_len; ++i) {
-			std::cout << extractBWT(&BWT_compressed, i) << std::endl;
-		}
-		alignfq(name, &BWT_compressed, BWT_len, &Ca, &Occ_chunk);
-
+		std::cout << "read stdin and do the align\n";
+		alignfq(name, &BWT_compressed, BWT_len, &Ca, &Occ_chunk, ref_name);
 	}
 	return 0;
 }
-
-// ./BWA177: error while loading shared libraries: libdivsufsort.so.3: cannot open shared object file: No such file or directory
 

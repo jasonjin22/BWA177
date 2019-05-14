@@ -7,6 +7,7 @@ add_definitions(-std=c++11)
 
 include_directories(include)
 
+
 aux_source_directory(src DIR_SRCS)
 aux_source_directory(src/align DIR_ALIGN)
 aux_source_directory(src/compressfa DIR_COMPRESSFA)

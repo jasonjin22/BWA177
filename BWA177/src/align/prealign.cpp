@@ -5,12 +5,21 @@
 #include <sstream>
 #include <iostream>
 
+/**
+ * \brief before do the align, first load the BWT and other things calculated in the index phase into memory
+ * \details load the BWT, Ca, Occ_chunk
+ * 
+ * \param name the name given by the user to denote the index things
+ * \param BWT_len the length of the BWT, we will store the length of BWT into it
+ * \param Ca we will read the Ca into Ca
+ * \param Occ_chunk we will read Occ_chunk into it
+ * \return return the compressed BWT as a uint8_t vector
+ */
 std::vector<uint8_t> prealign(std::string name, int & BWT_len, std::map<char, int> & Ca,
 						std::vector< std::map<char, int> > & Occ_chunk) {
 	std::string BWT_location = "../sequence/BWT/";
 	BWT_location += name;
 	BWT_location += ".BWT";
-	std::cout << BWT_location << std::endl;
 	std::ifstream BWT_stream(BWT_location);
 	std::stringstream BWT_buffer;
 	BWT_buffer << BWT_stream.rdbuf();
@@ -18,15 +27,12 @@ std::vector<uint8_t> prealign(std::string name, int & BWT_len, std::map<char, in
 
 	BWT_len = BWT_string.length();
 	std::vector<uint8_t> result = compressBWT(&BWT_string, BWT_len);
-	std::cout << "compressBWT length: " << result.size() << std::endl;
 	std::string Ca_location = "../sequence/Ca/";
 	Ca_location += name;
 	Ca_location += ".Ca";
-	std::cout << Ca_location << std::endl;
 	std::ifstream Ca_stream(Ca_location);
 	int A, C, G, T, N;
 	while (Ca_stream >> A >> C >> G >> T >> N) {
-		std::cout << A << " " << C << " " << G << " " << T << " " << N << " " << "\n";
 		Ca['A'] = A;
 		Ca['C'] = C;
 		Ca['G'] = G;
@@ -37,12 +43,10 @@ std::vector<uint8_t> prealign(std::string name, int & BWT_len, std::map<char, in
 	std::string Occ_location = "../sequence/Occ/";
 	Occ_location += name;
 	Occ_location += ".Occ";
-	std::cout << Occ_location << std::endl;
 	std::ifstream Occ_stream(Occ_location);
 	int Occ_A, Occ_C, Occ_G, Occ_T, Occ_N, Occ_dollar;
 	while (Occ_stream >> Occ_A >> Occ_C >> Occ_G >> Occ_T >> Occ_N >> Occ_dollar) {
 		std::map<char, int> map;
-		std::cout << Occ_A << " " << Occ_C << " " << Occ_G << " " << Occ_T << " " << Occ_N << " " << Occ_dollar << "\n";
 		map['A'] = Occ_A;
 		map['C'] = Occ_C;
 		map['G'] = Occ_G;

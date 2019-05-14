@@ -1,5 +1,14 @@
 #include "align/extractBWT.hpp"
 
+/**
+ * \brief used to get char from the compressed BWT vector
+ * \details use bit wise operation to get the want char
+ * 
+ * \param BWT_compressed the compressed BWT
+ * \param index the index which we want the char
+ * 
+ * \return the wanted char
+ */
 char extractBWT(std::vector<uint8_t> * const BWT_compressed, const int index) {
 	int compressed_index = index / 2;
 	int number_represent;

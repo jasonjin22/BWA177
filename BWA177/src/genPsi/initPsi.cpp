@@ -1,6 +1,13 @@
 #include "genPsi/initPsi.hpp"
 #include "compressfa/extractfa.hpp"
 
+/**
+ * \brief directly get the suffix array of a string
+ * \details called in brute_force_init_Psi(), directly modify the input string and sort it, only available with short input because the space cost is O(n^2)
+ * 
+ * \param segment the string we want the suffix array
+ * \return the suffix array of the string
+ */
 std::vector<int> getSA(std::string seg) {
 	std::vector<int> result;
 	int seg_len = seg.length();
@@ -16,6 +23,13 @@ std::vector<int> getSA(std::string seg) {
 	return result;
 }
 
+/**
+ * \brief get the inverse suffix array of a suffix array
+ * \details inverse the given suffix array,  only call in brute_force_init_Psi
+ * 
+ * \param sa the input suffix array
+ * \return the inverse suffix array
+ */
 std::vector<int> get_inv_SA(const std::vector<int> sa) {
 	int sa_len = sa.size();
 	std::vector<int> result(sa_len);
@@ -26,6 +40,15 @@ std::vector<int> get_inv_SA(const std::vector<int> sa) {
 	return result;
 }
 
+/**
+ * \brief construct the Psi array with computed suffix array and inverse suffix array
+ * \details construct the Psi array which can be used to construct the BWT, only call in brute_force_init_Psi
+ * 
+ * \param sa the suffix array
+ * \param inv_sa the inversed suffix array
+ * 
+ * \return the Psi array which can be used to construct the BWT
+ */
 std::vector<int> construct_Psi(const std::vector<int> sa, const std::vector<int> inv_sa) {
 	int sa_len = sa.size();
 	std::vector<int> result(sa_len);
@@ -38,6 +61,13 @@ std::vector<int> construct_Psi(const std::vector<int> sa, const std::vector<int>
 	return result;
 }
 
+/**
+ * \brief directly compute the Psi array for a short input string
+ * \details to incrementally compute the Psi array of a long string, we should first directly compute the initial short segment
+ * \param fa the input fa file
+ * \param segment the initial short segment
+ * \return the initial Psi array, which can be used to compute the whole Psi array step by step
+ */
 std::vector<int> brute_force_init_Psi(std::vector<uint8_t> * const fa, segment seg) {
 	std::string seg_str = "";
 	int start_index = seg.get_start_index();

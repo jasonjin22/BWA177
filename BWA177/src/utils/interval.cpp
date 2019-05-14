@@ -15,11 +15,16 @@ interval::interval(int start, int end) {
 
 interval::~interval() {}
 
+/**
+ * \brief the interval class can print itself
+ * \details the interval will print all the intervals it contained, parenthesed by {}, and intervals are parethesed by []
+ */
 void interval::print() {
 	if (_empty) {
 		std::cout << "[]";
 		return;
 	}
+	_list.sort();
 	std::cout << "{";
 	for (auto x : _list) {
 		if (std::get<1>(x) == '+') {
@@ -32,6 +37,13 @@ void interval::print() {
 	std::cout << "}";
 }
 
+/**
+ * \brief do the union opearation on two intervals
+ * \details use a fancy sorting algorithm to union two intervals
+ * 
+ * \param rhs the interval with which to union
+ * \return a new interval contains the unioned interval
+ */
 interval interval::interval_union(interval rhs) {
 	std::list< std::tuple<int, char> > copy_list = _list;
 		for (auto x : rhs._list) {
@@ -64,6 +76,7 @@ interval interval::interval_union(interval rhs) {
 		}
 	}
 	interval result;
+	new_list.sort();
 	result._list = new_list;
 	if (result._list.size() > 0) result._empty = false;
 	return result;
