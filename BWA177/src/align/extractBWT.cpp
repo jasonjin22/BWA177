@@ -1,14 +1,14 @@
-#include "compressfa/extractfa.hpp"
+#include "align/extractBWT.hpp"
 
-char extractfa(std::vector<uint8_t> * const fa, const int index) {
+char extractBWT(std::vector<uint8_t> * const BWT_compressed, const int index) {
 	int compressed_index = index / 2;
 	int number_represent;
 	if (index % 2) {
 		// the least significant 4 bits
-		number_represent = (*fa)[compressed_index] & 0x0f;
+		number_represent = (*BWT_compressed)[compressed_index] & 0x0f;
 	} else {
 		// the most significant 4 bits
-		number_represent = (*fa)[compressed_index] & 0xf0;
+		number_represent = (*BWT_compressed)[compressed_index] & 0xf0;
 		number_represent >>= 4;
 	}
 	switch (number_represent) {

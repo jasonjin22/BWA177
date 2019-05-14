@@ -12,6 +12,8 @@
 #include "genBWT/constructBWT.hpp"
 
 #include "align/prealign.hpp"
+#include "align/extractBWT.hpp"
+#include "align/alignfq.hpp"
 
 #include <divsufsort.h>
 #include <stdio.h>
@@ -120,8 +122,11 @@ int main(int argc, char const *argv[]) {
 		// load all the precalulated things from disk to memory
 		std::vector<uint8_t> BWT_compressed = prealign(name, BWT_len, Ca, Occ_chunk);
 		std::cout << "OUT !!!\n";
-		std::cout << (unsigned)BWT_compressed[2] << " " << BWT_len << " " << Ca['G'] << " " << Occ_chunk[2]['N'];
-
+		std::cout << (unsigned)BWT_compressed[2] << " " << BWT_len << " " << Ca['G'] << " " << Occ_chunk[2]['N'] << '\n';
+		for (int i = 0; i < BWT_len; ++i) {
+			std::cout << extractBWT(&BWT_compressed, i) << std::endl;
+		}
+		alignfq(name, &BWT_compressed, BWT_len, &Ca, &Occ_chunk);
 
 	}
 	return 0;

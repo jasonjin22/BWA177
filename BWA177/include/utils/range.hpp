@@ -13,8 +13,7 @@
  * 
  * \return nothing
  */
-class range
-{
+class range {
 public:
 	range(int start, int end);
 	~range();
