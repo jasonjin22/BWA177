@@ -24,27 +24,32 @@ using namespace std;
 void alignfq(std::string name, std::vector<uint8_t> * const BWT_compressed, int BWT_len,
 			std::map<char, int> * const Ca, std::vector< std::map<char, int> > * Occ_chunk,
 			std::string ref_name) {
+	// first we read in the SA file which is the suffix array of the indexing file
+	// we need it because we will search in this file to do the output of the aligned sequence
 	std::string SA_location = "../sequence/SA/";
 	SA_location += name;
 	SA_location += ".SA";
 	std::cout << SA_location << std::endl;
 	std::ifstream SA_stream(SA_location);
+	// to store the SA value
 	int SA;
+	// to denote the line number of the .SA file
 	int SA_line = 0;
 	for (std::string line; std::getline(std::cin, line); ) {
 		std::vector<int> D = calculateD(line, BWT_len, Ca, Occ_chunk, BWT_compressed);
-		// you can modify the z to adjust teh number of mismatch
+		// you can modify the z to adjust the number of allowed mismatch
+		// this will affect the performance of the aligning because it determines the depth of the search
 		int z = 3;
-		interval XX = inex_recur(D, line, line.length() - 1, z, 1, BWT_len - 1,
+		// do the recursive search and the return value is the interval we want
+		interval matched_interval = inex_recur(D, line, line.length() - 1, z, 1, BWT_len - 1,
 			Ca, Occ_chunk, BWT_len, BWT_compressed);
-		XX.print();
+		matched_interval.print();
 		cout << endl;
-		XX._list.sort();
-
+		matched_interval._list.sort();
+		// used to store the values in the satisfied interval
 		std::vector<int> candidate;
-		bool open = false;
 		int head, tail;
-		for (auto x : XX._list) {
+		for (auto x : matched_interval._list) {
 			if (std::get<1>(x) == '+') {
 				head = std::get<0>(x);
 			}
@@ -55,6 +60,7 @@ void alignfq(std::string name, std::vector<uint8_t> * const BWT_compressed, int 
 				}
 			}
 		}
+		// used to store the values in the SA file which we want
 		std::list<int> match_list;
 		int tem = 0;
 		while (SA_stream >> SA) {
@@ -68,6 +74,7 @@ void alignfq(std::string name, std::vector<uint8_t> * const BWT_compressed, int 
 			}
 		}
 		match_list.sort();
+		// after sorted, we can seek the matched sequence from the fa file
 		for (auto x : match_list) {
 			cout << x << endl;
 		}
